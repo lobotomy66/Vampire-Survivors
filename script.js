@@ -1,3 +1,6 @@
+// ============================================================
+// Ссылки на DOM-элементы
+// ============================================================
 const menu             = document.getElementById('menu');
 const difficultyScreen = document.getElementById('difficulty-screen');
 const pauseMenu        = document.getElementById('pause-menu');
@@ -21,6 +24,10 @@ const killCounterEl    = document.getElementById('kill-counter');
 const waveAnnounce     = document.getElementById('wave-announce');
 const gameOverMessage  = document.getElementById('game-over-message');
 const restartButton    = document.getElementById('restart-button');
+
+const playerHpWrap  = document.getElementById('player-healthbar-wrap');
+const playerHpFill  = document.getElementById('player-healthbar-fill');
+const playerHpValue = document.getElementById('player-hp-value');
 
 // ============================================================
 // Настройки сложности
@@ -78,6 +85,16 @@ function updateAmmoUI()  { ammoIndicator.textContent  = `Патроны: ${ammoC
 function updateWaveUI()  { waveIndicator.textContent  = `Волна: ${waveNumber}`; }
 function updateKillUI()  { killCounterEl.textContent  = `Убито: ${totalKills}`; }
 
+// Обновляет полосу HP: цвет меняется зелёный→жёлтый→красный
+function updateHealthUI() {
+    const pct = Math.max(0, playerHealth);
+    playerHpFill.style.width = pct + '%';
+    playerHpValue.textContent = Math.ceil(pct);
+    if (pct > 60)      playerHpFill.style.backgroundColor = '#2ecc40'; // зелёный
+    else if (pct > 30) playerHpFill.style.backgroundColor = '#ffdc00'; // жёлтый
+    else               playerHpFill.style.backgroundColor = '#ff4136'; // красный
+}
+
 function showWaveAnnounce(text, duration) {
     waveAnnounce.textContent    = text;
     waveAnnounce.style.display  = 'block';
@@ -132,6 +149,8 @@ function startGame() {
 
     updateAmmoUI();
     updateKillUI();
+    updateHealthUI();
+    playerHpWrap.style.display = 'flex';
     createPlayer();
     startNextWave();
     gameLoop();
@@ -308,18 +327,18 @@ function onEnemyDefeated() {
 //
 // Каждый враг при создании случайно получает одну из трёх ролей:
 //
-//   CHASER (преследователь, ~40%)
+//   ПРЕСЛЕДОВАТЕЛЬ (~40%)
 //     Бежит прямо к текущей позиции игрока.
 //     Простой и понятный — догоняет в лоб.
 //
-//   INTERCEPTOR (перехватчик, ~35%)
+//   ПЕРЕХВАТЧИК (~35%)
 //     Смотрит, куда движется игрок, и бежит не туда где он
-//     сейчас, а туда, где он окажется через PREDICT_MS мс.
+//     сейчас, а туда, где он окажется через PREDICT_FRAMES кадров.
 //     Отрезает пути отхода — игрок внезапно видит врага впереди.
 //
-//   FLANKER (обходчик, ~25%)
+//   ФЛАНКЕР (~25%)
 //     Идёт к точке сбоку от игрока (90° или 270° от вектора
-//     «игрок → враг»). Заходит с фланга, не мешая другим.
+//     «враг → игрок»). Заходит с фланга, не мешая другим.
 //
 // Все три роли дополняют друг друга и вынуждают игрока
 // постоянно менять направление бега.
@@ -408,7 +427,7 @@ function separateEnemies() {
 // ============================================================
 function getTarget(e, velX, velY) {
     if (e.role === 'chaser') {
-        // Просто текущая позиция игрока
+        // Текущая позиция игрока — цель прямого преследователя
         return { tx: playerX, ty: playerY };
     }
 
@@ -430,9 +449,9 @@ function getTarget(e, velX, velY) {
         const dx   = playerX - e.posX;
         const dy   = playerY - e.posY;
         const dist = Math.hypot(dx, dy) || 1;
-        const nx   = dx / dist;   // нормализованный вектор к игроку
+        const nx   = dx / dist;   // единичный вектор к игроку
         const ny   = dy / dist;
-        // Перпендикуляр: (nx, ny) → (-ny, nx) или (ny, -nx)
+        // Перпендикуляр: поворачиваем вектор на 90° в сторону flankSide
         return {
             tx: playerX + (-ny * e.flankSide) * FLANK_OFFSET,
             ty: playerY + ( nx * e.flankSide) * FLANK_OFFSET,
@@ -482,8 +501,7 @@ function updateEnemies() {
         // Урон при касании + отброс чтобы не бил каждый кадр
         if (distToPlayer < 20) {
             playerHealth -= diff.damagePerHit;
-            playerDiv.querySelector('.health-bar').style.width =
-                Math.max(0, playerHealth) + '%';
+            updateHealthUI();
             if (playerHealth <= 0) { endGame(); return; }
             const ang = Math.atan2(e.posY - playerY, e.posX - playerX);
             e.posX += Math.cos(ang) * 28;
