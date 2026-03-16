@@ -5,6 +5,12 @@
 var GameWaves = (function() {
     
     // Сюда будем добавлять функции
+    
+    return {
+        startNextWave: startNextWave,
+        onEnemyDefeated: onEnemyDefeated
+    };
+})();
 
 function startNextWave() {
     GameState.incrementWave();
@@ -42,9 +48,3 @@ function onEnemyDefeated() {
         }, GameConfig.GAME_PARAMS.WAVE_DELAY);
     }
 }
-    return {
-        startNextWave: startNextWave,
-        onEnemyDefeated: onEnemyDefeated
-    };
-})();
-
