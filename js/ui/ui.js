@@ -115,6 +115,7 @@ var GameUI = (function() {
         };
     }
 
+
     function initCanvas() {
     console.log('[UI] initCanvas вызван');
     if (typeof GameCanvas !== 'undefined' && GameCanvas.init) {
@@ -125,6 +126,31 @@ var GameUI = (function() {
         console.error('[UI] GameCanvas не найден');
     }
 }
+
+    function createPlayer() {
+        if (!elements.gameContainer) {
+            console.error('gameContainer не найден при создании игрока');
+            return;
+        }
+        
+        var playerDiv = document.createElement('div');
+        playerDiv.className = 'player';
+        playerDiv.style.left = GameState.player().x + 'px';
+        playerDiv.style.top = GameState.player().y + 'px';
+
+        var healthBar = document.createElement('div');
+        healthBar.className = 'health-bar';
+        healthBar.style.width = '100%';
+        playerDiv.appendChild(healthBar);
+
+        var playerGun = document.createElement('div');
+        playerGun.className = 'gun';
+        playerDiv.appendChild(playerGun);
+
+        elements.gameContainer.appendChild(playerDiv);
+        
+        GameState.setPlayerElement(playerDiv, playerGun);
+    }
 
     function createEnemyElement(x, y, health, maxHealth) {
         if (!elements.gameContainer) return null;
@@ -209,6 +235,7 @@ var GameUI = (function() {
     }
 
     function showGameUI() {
+
     console.log('[UI] showGameUI вызван');
     
     if (elements.gameContainer) elements.gameContainer.style.display = 'block';
@@ -218,8 +245,10 @@ var GameUI = (function() {
     if (elements.playerHpWrap) elements.playerHpWrap.style.display = 'flex';
     if (elements.soundToggle) elements.soundToggle.style.display = 'block';
     
-    initCanvas();  // Вместо createPlayer
+    initCanvas();
 }
+
+
 
     function hideAllMenus() {
         if (elements.menu) elements.menu.style.display = 'none';
