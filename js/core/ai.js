@@ -4,7 +4,7 @@
 
 var GameAI = (function() {
     
-    // Сюда будем добавлять функции
+    // Сюда будем добавлять функции.
     
     function createEnemy() {
         var diff = GameConfig.getDifficulty();
