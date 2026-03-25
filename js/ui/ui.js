@@ -269,6 +269,7 @@ var GameUI = (function() {
         showWaveAnnounce: showWaveAnnounce,
         showGameOver: showGameOver,
         showGameUI: showGameUI,
-        hideAllMenus: hideAllMenus
+        hideAllMenus: hideAllMenus,
+        setupMenuListeners: setupMenuListeners
     };
 })();
