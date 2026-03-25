@@ -3,6 +3,6 @@ function gameLoop() {
     window.helloQA2();
 }
 
-helloUI()
+helloUI();
 gameLoop();
 
